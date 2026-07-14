@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ICHIGOガチャガチャ ってなに?</title>
+<meta name="description" content="ICHIGOガチャガチャの仕組み・あそびかた・つくった話をご紹介します。">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ==== デザイントークン(negotiate/index.htmlと同一。変更する場合は両方に反映すること) ==== */
+  :root {
+    --paper: #f3e7d2;
+    --paper-deep: #e9dab8;
+    --ink: #2b2118;
+    --ink-soft: #7a6a54;
+    --vermilion: #c1402e;
+    --vermilion-deep: #8f2f20;
+    --indigo: #33415c;
+    --indigo-deep: #232e44;
+    --wood-light: #a9784a;
+    --wood-dark: #5b3a20;
+    --mustard: #e0a53d;
+    --font-display: 'Shippori Mincho', serif;
+    --font-body: 'Zen Maru Gothic', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body); max-width: 480px; margin: 0 auto; color: var(--ink);
+    overflow-wrap: break-word;
+    background: var(--paper) url(assets/paper-texture-tile.jpg);
+    background-size: 340px 340px;
+  }
+  .page { padding: 0 18px 40px; }
+  h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 4px; color: var(--indigo-deep); }
+  .sectionKicker {
+    display: inline-block; font-family: var(--font-display); font-size: .75rem; font-weight: 700;
+    letter-spacing: .12em; color: var(--vermilion-deep); margin-bottom: 2px;
+  }
+  .sectionKicker--indigo { color: var(--indigo); }
+  .sectionKicker--mustard { color: #a97321; }
+  .lead { font-size: .95rem; color: var(--ink-soft); margin: 6px 0 16px; }
+  section { padding-top: 8px; scroll-margin-top: 78px; }
+
+  /* ==== 屋台(ヒーロー)。negotiate/index.htmlと同じ合成手法 ==== */
+  .stallHero { position: relative; overflow: hidden; background: var(--indigo-deep); line-height: 0; }
+  .stallScene { display: block; width: 100%; height: auto; }
+  .stallShade {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(20,14,10,0) 45%, rgba(15,10,8,.68) 100%);
+  }
+  .stallSign {
+    position: absolute; top: 6%; left: 50%; transform: translateX(-50%) rotate(-1.2deg);
+    width: 60%; z-index: 3;
+  }
+  .signImg { display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 10px rgba(0,0,0,.5)); }
+  .stallCharacter {
+    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 44%; z-index: 2;
+  }
+  .characterImg {
+    width: 100%; height: auto; object-fit: contain; display: block;
+    transform-origin: bottom center; animation: gentleSway 4.5s ease-in-out infinite;
+  }
+  @keyframes gentleSway {
+    0%, 100% { transform: rotate(-1.8deg); }
+    50% { transform: rotate(1.8deg); }
+  }
+  .heroCopy { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 4; text-align: center; }
+  .heroTagline {
+    display: inline-block; font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+    color: #fff8ee; background: rgba(43,33,24,.55); padding: 6px 16px; border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  }
+
+  /* ==== 祭りの吹き流し(のぼり旗の帯)。装飾を増やして華やかにする ==== */
+  .buntingStrip {
+    height: 20px;
+    background-image: repeating-linear-gradient(
+      -55deg,
+      var(--vermilion) 0 14px,
+      var(--mustard) 14px 28px,
+      var(--indigo) 28px 42px,
+      var(--paper-deep) 42px 56px
+    );
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.25);
+  }
+
+  /* ==== カウンターの帯(区切り線として繰り返し使用) ==== */
+  .counterLedge {
+    height: 15px;
+    background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-dark) 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.22), 0 3px 6px rgba(0,0,0,.35);
+  }
+  .counterLedge--thin { height: 6px; margin: 26px 0 18px; border-radius: 3px; opacity: .85; }
+
+  /* ==== アンカーナビ(sticky) ====
+     .stallHeroの外側の兄弟要素として置く(overflow:hiddenがstickyを妨げるため)。
+     6タイルは480px幅に収まる想定だが、念のため横スクロールにフォールバックする。 */
+  .tileNav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; gap: 6px; padding: 8px 10px;
+    background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-dark) 100%);
+    box-shadow: 0 3px 8px rgba(0,0,0,.35);
+    overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  }
+  .tileNav::-webkit-scrollbar { display: none; }
+  .tileNav a {
+    scroll-snap-align: start; flex: 0 0 auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    width: 70px; height: 58px; border-radius: 10px;
+    background: rgba(255,248,238,.14); color: #fff8ee; text-decoration: none;
+    font-size: .68rem; font-weight: 700; line-height: 1.2; text-align: center;
+    border: 1px solid rgba(255,248,238,.28);
+    transition: background .15s ease, transform .1s ease;
+  }
+  .tileNav a .tileIcon { font-size: 1.25rem; }
+  .tileNav a:active { transform: translateY(1px); }
+  .tileNav a.is-active { background: var(--vermilion); border-color: var(--vermilion-deep); }
+  .tileNav a.tileNav__cta { background: var(--vermilion); border-color: var(--vermilion-deep); }
+
+  /* ==== ボタン ==== */
+  .ctaBtn {
+    position: relative; overflow: hidden;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-body); font-size: 1rem; font-weight: 700; padding: 13px 22px;
+    border-radius: 10px; border: none; background: var(--vermilion); color: #fff8ee; cursor: pointer;
+    box-shadow: 0 3px 0 var(--vermilion-deep), 0 4px 8px rgba(0,0,0,.18);
+    text-decoration: none; width: 100%; justify-content: center;
+  }
+  .ctaBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--vermilion-deep), 0 2px 4px rgba(0,0,0,.18); }
+  .ctaBtn .tileIcon { font-size: 1.2rem; }
+  .ctaBtn::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,.4), transparent);
+    animation: ctaShine 3.2s ease-in-out infinite;
+  }
+  @keyframes ctaShine {
+    0% { left: -60%; }
+    55% { left: 130%; }
+    100% { left: 130%; }
+  }
+
+  /* ==== 値札(番号バッジ等に流用) ==== */
+  .priceTag {
+    position: relative; display: inline-block;
+    font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+    color: var(--vermilion-deep); background: var(--paper-deep);
+    border: 1px solid rgba(43,33,24,.22);
+    border-radius: 4px 13px 4px 13px;
+    padding: 4px 16px 4px 20px;
+    transform: rotate(-1.5deg);
+    box-shadow: 2px 3px 0 rgba(43,33,24,.12);
+  }
+  .priceTag::before {
+    content: ""; position: absolute; left: 7px; top: 50%; transform: translateY(-50%);
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--paper); box-shadow: inset 0 0 0 1px rgba(43,33,24,.35);
+  }
+
+  /* ==== 仕組み解説: 3コマのフロー図(SVG手描き、AI画像が用意でき次第 mechanism-diagram.png に差し替え可) ==== */
+  .mechanismDiagram { margin: 14px 0 6px; border-radius: 12px; overflow: hidden; background: #fffcf4; border: 1px solid rgba(43,33,24,.15); }
+  .mechanismCaptions { display: flex; justify-content: space-between; margin-top: 8px; gap: 6px; }
+  .mechanismCaptions span {
+    flex: 1; text-align: center; font-size: .72rem; color: var(--ink-soft); font-weight: 700;
+  }
+
+  /* ==== あそびかたステップ ==== */
+  .stepCard {
+    display: flex; align-items: center; gap: 14px; margin: 14px 0;
+  }
+  .stepThumb {
+    flex: 0 0 auto; width: 62px; height: 62px; border-radius: 50%; overflow: hidden;
+    background: var(--paper-deep); border: 2px solid var(--wood-light); box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  .stepThumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .stepBody { flex: 1; min-width: 0; }
+  .stepNum {
+    font-size: .68rem; padding: 1px 10px 1px 14px; transform: rotate(-2deg);
+  }
+  .stepTitle { font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin: 3px 0 2px; }
+  .stepDesc { font-size: .85rem; color: var(--ink-soft); margin: 0; }
+
+  /* ==== 制作秘話タイムライン ==== */
+  .timeline { position: relative; margin: 10px 0 0; padding-left: 20px; }
+  .timelineRail {
+    position: absolute; left: 5px; top: 4px; bottom: 4px; width: 6px; border-radius: 3px;
+    background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-dark) 100%);
+  }
+  .timelineEntry { position: relative; margin: 0 0 24px; }
+  .timelineEntry::before {
+    content: ""; position: absolute; left: -19px; top: 4px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--vermilion); border: 2px solid var(--paper); box-shadow: 0 0 0 2px var(--wood-dark);
+  }
+  .timelineDate { font-family: var(--font-display); font-weight: 700; font-size: .82rem; color: var(--vermilion-deep); }
+  .timelineTitle { font-weight: 700; margin: 2px 0 4px; }
+  .timelineDesc { font-size: .87rem; color: var(--ink-soft); margin: 0 0 8px; }
+
+  /* ==== 差し替え可能な写真プレースホルダー ====
+     プレースホルダーと本番<img>の両方が同じ.photoBoxを使うことで、
+     aspect-ratio/object-fitを変えずに差し替えられるようにする。 */
+  .photoBox {
+    display: flex; align-items: center; justify-content: center;
+    aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+    background:
+      repeating-linear-gradient(45deg, rgba(43,33,24,.05) 0 10px, rgba(43,33,24,.09) 10px 20px),
+      var(--paper-deep);
+    border: 2px dashed rgba(43,33,24,.32);
+    color: var(--ink-soft); font-size: .78rem; text-align: center; padding: 10px;
+  }
+  .photoBox img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photoBox--round { aspect-ratio: 1 / 1; border-radius: 50%; }
+
+  /* ==== スタッフ紹介 ==== */
+  .staffGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  .staffCard { text-align: center; }
+  .staffCard .photoBox { width: 96px; height: 96px; margin: 0 auto 8px; aspect-ratio: 1/1; }
+  .staffName { font-weight: 700; font-size: .92rem; margin: 2px 0; }
+  .staffRole { font-size: .75rem; color: var(--vermilion-deep); font-weight: 700; }
+  .staffComment { font-size: .8rem; color: var(--ink-soft); margin: 4px 0 0; }
+
+  /* ==== 動画セクション ====
+     縦・横どちらの動画が来ても崩れないよう、暗い舞台色の枠に収める。
+     動画のmetadata読み込み後、実際の比率にJSで補正する。 */
+  .videoFrame {
+    position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 70vh;
+    border-radius: 12px; overflow: hidden; background: var(--indigo-deep);
+    border: 3px solid var(--wood-dark); box-shadow: 0 4px 10px rgba(0,0,0,.35);
+    margin-top: 12px;
+  }
+  .videoFrame video { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--indigo-deep); }
+  .videoPlaceholder {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background:
+      linear-gradient(rgba(35,46,68,.35), rgba(35,46,68,.75)),
+      repeating-linear-gradient(135deg, rgba(255,248,238,.06) 0 8px, rgba(255,248,238,0) 8px 16px);
+  }
+  .noren {
+    display: flex; gap: 6px;
+  }
+  .norenPanel {
+    width: 30px; height: 84px; background: var(--vermilion);
+    border-radius: 0 0 4px 4px; box-shadow: inset 0 -6px 10px rgba(0,0,0,.25);
+    display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;
+  }
+  .norenPanel span {
+    color: #fff8ee; font-family: var(--font-display); font-weight: 800; writing-mode: vertical-rl; font-size: .82rem;
+  }
+
+  /* ==== フッター ==== */
+  .divider { text-align: center; color: var(--wood-light); font-size: .9rem; letter-spacing: .4em; margin: 22px 0 18px; opacity: .8; }
+  footer { margin-top: 30px; text-align: center; }
+  .footerNote { font-size: .78rem; color: var(--ink-soft); margin-top: 14px; }
+  .footerNote a { color: var(--vermilion-deep); }
+</style>
+</head>
+<body>
+  <div class="stallHero">
+    <img src="assets/header-banner.png" alt="" class="stallScene">
+    <div class="stallShade"></div>
+    <div class="stallSign"><img src="assets/logo.png" alt="ICHIGOガチャガチャ" class="signImg"></div>
+    <div class="stallCharacter"><img src="assets/ichigoban-greet.png" alt="イチゴ番" class="characterImg"></div>
+    <div class="heroCopy"><span class="heroTagline">ICHIGOガチャガチャってなに?</span></div>
+  </div>
+  <div class="buntingStrip"></div>
+  <div class="counterLedge"></div>
+
+  <nav class="tileNav" id="tileNav">
+    <a href="#mechanism" data-section="mechanism"><span class="tileIcon">⚙️</span>しくみ</a>
+    <a href="#how-to" data-section="how-to"><span class="tileIcon">🕹️</span>あそびかた</a>
+    <a href="#story-timeline" data-section="story-timeline"><span class="tileIcon">📜</span>制作秘話</a>
+    <a href="#staff" data-section="staff"><span class="tileIcon">🧑‍🍳</span>スタッフ</a>
+    <a href="#video" data-section="video"><span class="tileIcon">🎬</span>動画</a>
+    <a href="https://ichigo-gatya.onrender.com/negotiate/" class="tileNav__cta" target="_blank" rel="noopener"><span class="tileIcon">🎯</span>挑戦する</a>
+  </nav>
+
+  <div class="page">
+    <p class="lead">段ボール製の実機ガチャガチャを、学園祭通貨「ICHIGO」で動かすプロジェクトです。仕組み・あそびかた・つくった裏話をこの1ページにまとめました。待ち時間にゆっくりどうぞ。</p>
+
+    <a class="ctaBtn" href="https://ichigo-gatya.onrender.com/negotiate/" target="_blank" rel="noopener">
+      <span class="tileIcon">🎯</span>さっそくガチャに挑戦する
+    </a>
+
+    <div class="counterLedge--thin"></div>
+
+    <section id="mechanism">
+      <span class="sectionKicker">⚙️ HOW IT WORKS</span>
+      <h2>ICHIGOガチャガチャのしくみ</h2>
+      <p class="lead">「ICHIGO」は授業内だけで使える講義内通貨です。ICHIGOを送金すると、店番AIがそれを確認して、実機ガチャガチャのロックをそっと解除します。</p>
+
+      <div class="mechanismDiagram">
+        <svg viewBox="0 0 360 150" width="100%" role="img" aria-label="スマホから送金し、店番が確認し、カプセルが出てくる3コマの図">
+          <rect width="360" height="150" fill="#fffcf4"/>
+          <!-- 背景にきらめきを少し散らす -->
+          <g fill="#e0a53d" opacity=".55">
+            <text x="10" y="18" font-size="12">✦</text>
+            <text x="345" y="30" font-size="10">✦</text>
+            <text x="120" y="140" font-size="10">✦</text>
+            <text x="250" y="18" font-size="12">✦</text>
+          </g>
+          <!-- コマ1: スマホ+送金 -->
+          <g transform="translate(18,22)">
+            <rect x="6" y="0" width="56" height="96" rx="10" fill="#33415c"/>
+            <rect x="12" y="8" width="44" height="72" rx="3" fill="#f3e7d2"/>
+            <circle cx="34" cy="86" r="4" fill="#e9dab8"/>
+            <text x="34" y="34" text-anchor="middle" font-size="20">🍓</text>
+            <text x="34" y="58" text-anchor="middle" font-size="11" fill="#8f2f20" font-weight="700">送金</text>
+          </g>
+          <path d="M92 70 H130" stroke="#a9784a" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="130,62 146,70 130,78" fill="#a9784a"/>
+          <!-- コマ2: 店番が確認 -->
+          <g transform="translate(154,16)">
+            <circle cx="34" cy="34" r="34" fill="#e9dab8" stroke="#c1402e" stroke-width="3"/>
+            <text x="34" y="42" text-anchor="middle" font-size="30">👀</text>
+            <text x="34" y="84" text-anchor="middle" font-size="11" fill="#8f2f20" font-weight="700">確認</text>
+          </g>
+          <path d="M232 70 H270" stroke="#a9784a" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="270,62 286,70 270,78" fill="#a9784a"/>
+          <!-- コマ3: ガチャガチャの機械からカプセルが出てくる -->
+          <g transform="translate(288,10)">
+            <!-- 機械本体 -->
+            <rect x="4" y="26" width="48" height="46" rx="6" fill="#5b3a20" stroke="#3a2410" stroke-width="1"/>
+            <rect x="4" y="70" width="48" height="10" rx="2" fill="#3a2410"/>
+            <!-- ガラスドーム(中にカプセルが見える) -->
+            <path d="M6 26 a22 20 0 0 1 44 0 z" fill="#fdf6e3" stroke="#3a2410" stroke-width="1.5"/>
+            <circle cx="18" cy="20" r="3.4" fill="#c1402e"/>
+            <circle cx="29" cy="14" r="3.4" fill="#e0a53d"/>
+            <circle cx="38" cy="21" r="3.4" fill="#33415c"/>
+            <circle cx="26" cy="22" r="3" fill="#3f7a4f"/>
+            <!-- コイン投入口 -->
+            <rect x="23" y="44" width="10" height="4" rx="2" fill="#2b2118"/>
+            <!-- 取り出し口 -->
+            <rect x="16" y="60" width="24" height="8" rx="2" fill="#2b2118"/>
+            <!-- 出てきたカプセル(2トーン) -->
+            <g transform="translate(13,80)">
+              <circle cx="15" cy="15" r="15" fill="#fdf6e3" stroke="#8f2f20" stroke-width="2"/>
+              <path d="M0.5 15 A14.5 14.5 0 0 1 29.5 15 Z" fill="#c1402e" stroke="#8f2f20" stroke-width="2"/>
+            </g>
+            <text x="28" y="122" text-anchor="middle" font-size="11" fill="#8f2f20" font-weight="700">排出</text>
+          </g>
+        </svg>
+      </div>
+      <div class="mechanismCaptions">
+        <span>① スマホでICHIGOを送金</span>
+        <span>② 店番AIがオンチェーンで確認</span>
+        <span>③ カプセルがコロンと出てくる</span>
+      </div>
+    </section>
+
+    <div class="counterLedge--thin"></div>
+
+    <section id="how-to">
+      <span class="sectionKicker sectionKicker--indigo">🕹️ HOW TO PLAY</span>
+      <h2>あそびかた</h2>
+      <p class="lead">むずかしい操作はありません。スマホとウォレットアプリさえあれば、この5ステップだけです。</p>
+
+      <div class="stepCard">
+        <div class="stepThumb"><img src="assets/ichigoban-greet.png" alt=""></div>
+        <div class="stepBody">
+          <span class="priceTag stepNum">STEP 1</span>
+          <p class="stepTitle">QRコードを読み取る</p>
+          <p class="stepDesc">ガチャ本体に貼ってあるQRを読み取ると、決済ページが開きます。</p>
+        </div>
+      </div>
+      <div class="stepCard">
+        <div class="stepThumb"><img src="assets/ichigoban-greet.png" alt=""></div>
+        <div class="stepBody">
+          <span class="priceTag stepNum">STEP 2</span>
+          <p class="stepTitle">ウォレットを接続する</p>
+          <p class="stepDesc">お持ちのウォレットアプリ(MetaMask等)を接続します。</p>
+        </div>
+      </div>
+      <div class="stepCard">
+        <div class="stepThumb"><img src="assets/ichigoban-thinking.png" alt=""></div>
+        <div class="stepBody">
+          <span class="priceTag stepNum">STEP 3</span>
+          <p class="stepTitle">店番AIと交渉する</p>
+          <p class="stepDesc">値切り交渉にチャレンジ。話し方次第で価格が変わります。</p>
+        </div>
+      </div>
+      <div class="stepCard">
+        <div class="stepThumb"><img src="assets/ichigoban-decided.png" alt=""></div>
+        <div class="stepBody">
+          <span class="priceTag stepNum">STEP 4</span>
+          <p class="stepTitle">支払う</p>
+          <p class="stepDesc">価格が決まったら、その場でICHIGOを送金します。</p>
+        </div>
+      </div>
+      <div class="stepCard">
+        <div class="stepThumb"><img src="assets/ichigoban-thanks.png" alt=""></div>
+        <div class="stepBody">
+          <span class="priceTag stepNum">STEP 5</span>
+          <p class="stepTitle">カプセルを受け取る</p>
+          <p class="stepDesc">実機のロックが解除されるので、カプセルを取り出してください。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="counterLedge--thin"></div>
+
+    <section id="story-timeline">
+      <span class="sectionKicker sectionKicker--mustard">📜 BEHIND THE SCENES</span>
+      <h2>制作秘話</h2>
+      <p class="lead">このガチャガチャができるまでの道のりです。当日の様子は後日ここに追加します。</p>
+
+      <div class="timeline">
+        <div class="timelineRail"></div>
+
+        <div class="timelineEntry">
+          <p class="timelineDate">2026-07-02</p>
+          <p class="timelineTitle">決済専用ページの土台づくり</p>
+          <p class="timelineDesc">友人のゲームには頼らず、送金だけを行うシンプルなページを自作することに決定。</p>
+        </div>
+
+        <div class="timelineEntry">
+          <p class="timelineDate">2026-07-11</p>
+          <p class="timelineTitle">アートスタイルを「昭和レトロな縁日」に決定</p>
+          <p class="timelineDesc">AI画像生成ツールをいろいろ試しながら、屋台のポスター風のデザイン方針が固まっていく。</p>
+          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-11.jpg に差し替え -->(生成ツールを試している画面など)</span></div>
+        </div>
+
+        <div class="timelineEntry">
+          <p class="timelineDate">2026-07-12</p>
+          <p class="timelineTitle">画像生成ツールが「Google AI Studio」に決定</p>
+          <p class="timelineDesc">Leonardo AI・Adobe Fireflyと試行錯誤した末、狙った絵柄と正しい文字が安定して出るツールに出会う。</p>
+        </div>
+
+        <div class="timelineEntry">
+          <p class="timelineDate">2026-07-13</p>
+          <p class="timelineTitle">配色を朱赤・藍・生成りクリームへ全面刷新</p>
+          <p class="timelineDesc">「見た目がバラバラ」という指摘を受け、イラストの世界観から採った配色に統一。値札や屋台の舞台演出が生まれた。</p>
+          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-13.jpg に差し替え --></span></div>
+        </div>
+
+        <div class="timelineEntry">
+          <p class="timelineDate">2026-07-16</p>
+          <p class="timelineTitle">CHIBATECH PROTOTYPE 当日</p>
+          <p class="timelineDesc">当日の様子は後日ここに追加します。</p>
+          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-16.jpg に差し替え -->(段ボール本体・配線・作業風景など)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="counterLedge--thin"></div>
+
+    <section id="staff">
+      <span class="sectionKicker">🧑‍🍳 STAFF</span>
+      <h2>つくったひと</h2>
+      <p class="lead">2人でつくりました。</p>
+      <div class="staffGrid">
+        <div class="staffCard">
+          <div class="photoBox photoBox--round"><span>写真準備中<!-- TODO: assets/staff/member1.jpg --></span></div>
+          <p class="staffName">スタッフ名(調整中)</p>
+          <p class="staffRole">開発・企画</p>
+          <p class="staffComment">コメント準備中</p>
+        </div>
+        <div class="staffCard">
+          <div class="photoBox photoBox--round"><span>写真準備中<!-- TODO: assets/staff/member2.jpg --></span></div>
+          <p class="staffName">スタッフ名(調整中)</p>
+          <p class="staffRole">担当(調整中)</p>
+          <p class="staffComment">コメント準備中</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="counterLedge--thin"></div>
+
+    <section id="video">
+      <span class="sectionKicker sectionKicker--indigo">🎬 MOVIE</span>
+      <h2>制作動画</h2>
+      <p class="lead">つくる過程をまとめた動画です。完成でき次第、ここに公開します。</p>
+
+      <div class="videoFrame" id="videoFrame">
+        <!-- 動画が用意でき次第、下のvideoPlaceholderをこの内容に差し替える:
+        <video controls playsinline preload="metadata" poster="assets/video-poster.png">
+          <source src="video/making-of.mp4" type="video/mp4">
+        </video>
+        -->
+        <div class="videoPlaceholder">
+          <div class="noren">
+            <div class="norenPanel"><span>準</span></div>
+            <div class="norenPanel"><span>備</span></div>
+            <div class="norenPanel"><span>中</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider">🍓 ✦ 🍓</div>
+
+    <footer>
+      <a class="ctaBtn" href="https://ichigo-gatya.onrender.com/negotiate/" target="_blank" rel="noopener">
+        <span class="tileIcon">🎯</span>さっそくガチャに挑戦する
+      </a>
+      <p class="footerNote">千葉工業大学「web3/AI概論」— CHIBATECH PROTOTYPE(2026-07-16)出展作品</p>
+    </footer>
+  </div>
+
+<script type="module">
+  // アクティブなセクションをナビでハイライト
+  const navLinks = Array.from(document.querySelectorAll('#tileNav a[data-section]'));
+  const sections = navLinks
+    .map(a => document.getElementById(a.dataset.section))
+    .filter(Boolean);
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const link = navLinks.find(a => a.dataset.section === entry.target.id);
+      if (!link) return;
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('is-active'));
+        link.classList.add('is-active');
+      }
+    });
+  }, { rootMargin: '-45% 0px -45% 0px' });
+
+  sections.forEach(sec => observer.observe(sec));
+
+  // 動画が差し込まれた場合、実際の縦横比にvideoFrameを補正する
+  const videoFrame = document.getElementById('videoFrame');
+  const video = videoFrame.querySelector('video');
+  if (video) {
+    const applyAspect = () => {
+      if (video.videoWidth && video.videoHeight) {
+        videoFrame.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+      }
+    };
+    // 小さいローカル動画は読み込みが速く、リスナー登録前にmetadataが
+    // 読み込み済み(readyState>=1)になっていることがあるため、
+    // その場合は即時反映し、そうでなければloadedmetadataを待つ。
+    if (video.readyState >= 1) {
+      applyAspect();
+    } else {
+      video.addEventListener('loadedmetadata', applyAspect);
+    }
+  }
+</script>
+</body>
+</html>
