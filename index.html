@@ -292,7 +292,7 @@
       <p class="lead">「ICHIGO」は授業内だけで使える講義内通貨です。ICHIGOを送金すると、店番AIがそれを確認して、実機ガチャガチャのロックをそっと解除します。</p>
 
       <div class="mechanismDiagram">
-        <svg viewBox="0 0 360 150" width="100%" role="img" aria-label="スマホから送金し、店番が確認し、カプセルが出てくる3コマの図">
+        <svg viewBox="0 0 360 150" width="100%" role="img" aria-label="スマホから送金し、店番が確認し、実機のロックが解除される3コマの図">
           <rect width="360" height="150" fill="#fffcf4"/>
           <!-- 背景にきらめきを少し散らす -->
           <g fill="#e0a53d" opacity=".55">
@@ -319,8 +319,8 @@
           </g>
           <path d="M232 70 H270" stroke="#a9784a" stroke-width="6" stroke-linecap="round"/>
           <polygon points="270,62 286,70 270,78" fill="#a9784a"/>
-          <!-- コマ3: ガチャガチャの機械からカプセルが出てくる -->
-          <g transform="translate(288,10)">
+          <!-- コマ3: ガチャガチャの機械のロックが解除される(排出は自動ではなく、自分でハンドルを回す) -->
+          <g transform="translate(284,10)">
             <!-- 機械本体 -->
             <rect x="4" y="26" width="48" height="46" rx="6" fill="#5b3a20" stroke="#3a2410" stroke-width="1"/>
             <rect x="4" y="70" width="48" height="10" rx="2" fill="#3a2410"/>
@@ -330,23 +330,23 @@
             <circle cx="29" cy="14" r="3.4" fill="#e0a53d"/>
             <circle cx="38" cy="21" r="3.4" fill="#33415c"/>
             <circle cx="26" cy="22" r="3" fill="#3f7a4f"/>
-            <!-- コイン投入口 -->
-            <rect x="23" y="44" width="10" height="4" rx="2" fill="#2b2118"/>
-            <!-- 取り出し口 -->
+            <!-- 取り出し口(まだ閉じたまま) -->
             <rect x="16" y="60" width="24" height="8" rx="2" fill="#2b2118"/>
-            <!-- 出てきたカプセル(2トーン) -->
-            <g transform="translate(13,80)">
-              <circle cx="15" cy="15" r="15" fill="#fdf6e3" stroke="#8f2f20" stroke-width="2"/>
-              <path d="M0.5 15 A14.5 14.5 0 0 1 29.5 15 Z" fill="#c1402e" stroke="#8f2f20" stroke-width="2"/>
-            </g>
-            <text x="28" y="122" text-anchor="middle" font-size="11" fill="#8f2f20" font-weight="700">排出</text>
+            <!-- 側面のハンドル(自分で回すことを示す) -->
+            <circle cx="58" cy="56" r="9" fill="#e0a53d" stroke="#3a2410" stroke-width="2"/>
+            <rect x="55" y="47" width="6" height="11" rx="2" fill="#3a2410"/>
+            <text x="58" y="61" text-anchor="middle" font-size="12" fill="#3a2410" font-weight="700">↻</text>
+            <!-- ロック解除ランプ -->
+            <circle cx="12" cy="34" r="4" fill="#3f7a4f"/>
+            <text x="28" y="98" text-anchor="middle" font-size="11" fill="#3f7a4f" font-weight="700">ロック解除</text>
+            <text x="28" y="112" text-anchor="middle" font-size="9" fill="#8f2f20">(あとは自分で回す)</text>
           </g>
         </svg>
       </div>
       <div class="mechanismCaptions">
         <span>① スマホでICHIGOを送金</span>
         <span>② 店番AIがオンチェーンで確認</span>
-        <span>③ カプセルがコロンと出てくる</span>
+        <span>③ ロックが解除される(回すのは自分で!)</span>
       </div>
     </section>
 
@@ -393,8 +393,8 @@
         <div class="stepThumb"><img src="assets/ichigoban-thanks.png" alt=""></div>
         <div class="stepBody">
           <span class="priceTag stepNum">STEP 5</span>
-          <p class="stepTitle">カプセルを受け取る</p>
-          <p class="stepDesc">実機のロックが解除されるので、カプセルを取り出してください。</p>
+          <p class="stepTitle">レバーを回してカプセルを受け取る</p>
+          <p class="stepDesc">実機のロックが解除されます(自動で出てくるわけではありません)。あとはガチャガチャのレバーを自分の手で回して、カプセルを受け取ってください。</p>
         </div>
       </div>
     </section>
