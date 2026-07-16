@@ -202,7 +202,17 @@
   /* ==== スタッフ紹介(ゴージャス版) ====
      採用担当など外部の人が見ても本名で覚えてもらえるよう、本名を主役にして
      写真を大きく見せ、金の縁取り・角の飾りでプロフィールカードらしい
-     ゴージャスな見た目にする。 */
+     ゴージャスな見た目にする。セクション自体は.pageの左右パディングを
+     打ち消して(負のマージン)フルブリードの背景画像を敷き、その上に
+     カードを浮かせる舞台にする。 */
+  #staff {
+    position: relative; margin: 0 -18px; padding: 26px 18px 34px;
+    background: linear-gradient(rgba(12,8,22,.6), rgba(12,8,22,.8)), url(assets/staff-bg.jpg) center/cover no-repeat;
+    color: #fff8ee;
+  }
+  #staff .sectionKicker { color: #ffb8c9; }
+  #staff h2 { color: #fff8ee; }
+  #staff .lead { color: #d9d2e6; }
   .staffShowcase { display: flex; flex-direction: column; gap: 22px; margin-top: 14px; }
   .staffProfile {
     position: relative; display: flex; gap: 14px; align-items: flex-start;
@@ -255,16 +265,17 @@
 
   /* ==== れのあ・おちえくのポップアップ演出 ====
      ただ現れて静止しているだけだと味気ないので、ポップイン後もずっと
-     ゆらゆら浮遊させ(bobFloat)、スクロールに応じて位置が少し動き(JS側で
+     ゆらゆら浮遊させ(bobFloat)、スクロールに応じて位置が少し動く(JS側で
      標準translateプロパティを操作、keyframeが使うtransformとは別プロパティ
-     なので競合しない)、タップすると跳ねるインタラクションを付ける。
-     本文と重なってもよい代わりに一回り大きくする。矢印バッジで
-     「上のボタンを押してね」を指し示し、タップでそこまでスクロールする。 */
+     なので競合しない)。タップすると縁からもう少し顔を出して3秒ほど留まり、
+     また元の位置に戻る(translateのXをJSで一時的に足す)。本文と重なっても
+     よい代わりに一回り大きくする。 */
   .charAnchor { position: relative; height: 62px; margin: 6px 0; }
   .charPopup {
     position: absolute; top: -14px; z-index: 15; width: 82px; height: auto; opacity: 0;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
     cursor: pointer; pointer-events: auto; touch-action: manipulation;
+    transition: translate .45s cubic-bezier(.34,1.2,.4,1);
   }
   .charPopup--right { right: -16px; }
   .charPopup--left { left: -16px; }
@@ -294,20 +305,8 @@
     78% { transform: scale(1.06, .96) rotate(-2deg); }
     100% { transform: scale(1) rotate(0); }
   }
-  .charArrow {
-    position: absolute; top: -22px; z-index: 16; font-size: 1.3rem; opacity: 0;
-    pointer-events: none; animation: arrowPoint 1.6s ease-in-out infinite;
-  }
-  .charArrow--right { right: 4px; }
-  .charArrow--left { left: 4px; }
-  .charAnchor:has(.charPopup.is-in) .charArrow { opacity: 1; }
-  @keyframes arrowPoint {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
   @media (prefers-reduced-motion: reduce) {
     .charPopup { opacity: 1; transform: none; animation: none; }
-    .charArrow { animation: none; }
   }
 
   /* ==== フッター ==== */
@@ -338,13 +337,14 @@
 
   <div class="page">
     <p class="lead">段ボール製のガチャガチャを授業内通貨のICHIGOで動かすプロジェクトです。仕組み・あそびかた・つくった裏話をこの1ページにまとめました。待ち時間にゆっくりどうぞ。</p>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-sorry.png" alt="おちえく"></div>
 
     <a class="ctaBtn" href="https://ichigo-gatya.onrender.com/negotiate/" target="_blank" rel="noopener">
       <span class="tileIcon">🎯</span>さっそくガチャに挑戦する
     </a>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"><span class="charArrow charArrow--right">👆</span></div>
+    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"></div>
 
     <section id="mechanism">
       <span class="sectionKicker">⚙️ HOW IT WORKS</span>
@@ -408,16 +408,17 @@
         <span>② 店番AIがオンチェーンで確認</span>
         <span>③ ロックが解除される(回すのは自分で!)</span>
       </div>
-      <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
+      <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"></div>
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
 
     <section id="how-to">
       <span class="sectionKicker sectionKicker--indigo">🕹️ HOW TO PLAY</span>
       <h2>あそびかた</h2>
       <p class="lead">むずかしい操作はありません。スマホとウォレットアプリさえあれば、この5ステップだけです。</p>
+      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thanks.png" alt="れのあ"></div>
 
       <div class="stepCard">
         <div class="stepThumb"><img src="assets/ichigoban-greet.png" alt=""></div>
@@ -443,7 +444,7 @@
           <p class="stepDesc">値切り交渉にチャレンジ。話し方次第で価格が変わります。</p>
         </div>
       </div>
-      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"><span class="charArrow charArrow--right">👆</span></div>
+      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"></div>
       <div class="stepCard">
         <div class="stepThumb"><img src="assets/ichigoban-decided.png" alt=""></div>
         <div class="stepBody">
@@ -463,7 +464,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
 
     <section id="staff">
       <span class="sectionKicker">🧑‍🍳 STAFF</span>
@@ -479,6 +480,7 @@
             <p class="staffQuote">AIやメタバースのような最先端技術を、もっと多くの人が気軽に触れられるものにしたい。そんな技術者を目指しています。</p>
           </div>
         </div>
+        <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/ochieku-happy.png" alt="おちえく"></div>
         <div class="staffProfile">
           <div class="staffPhotoFrame"><img src="assets/staff-otiek.png" alt="倉持啓人"></div>
           <div class="staffInfo">
@@ -493,8 +495,8 @@
 
     <div class="counterLedge--thin"></div>
     <div class="charAnchor">
-      <img class="charPopup charPopup--left" src="assets/renoa-happy.png" alt="れのあ"><span class="charArrow charArrow--left">👆</span>
-      <img class="charPopup charPopup--right" src="assets/ochieku-worried.png" alt="おちえく"><span class="charArrow charArrow--right">👆</span>
+      <img class="charPopup charPopup--left" src="assets/renoa-happy.png" alt="れのあ">
+      <img class="charPopup charPopup--right" src="assets/ochieku-worried.png" alt="おちえく">
     </div>
 
     <section id="video">
@@ -550,21 +552,38 @@
   }, { threshold: 0 });
   charAnchors.forEach(anchor => popupObserver.observe(anchor));
 
-  // タップで跳ねる+ページ上部の「挑戦する」ボタンまでスクロール(矢印バッジが指す先)。
+  // タップで跳ねて、縁からもう少し顔を出して3秒ほど留まり、また元に戻る。
+  // translateのXをそのための一時オフセット、Yをスクロール連動の位置ずれに使い、
+  // 変わるたびに合成して1つのtranslate値として書き込む(transformはkeyframe側が
+  // 使う別プロパティなので競合しない)。
   const charPopups = Array.from(document.querySelectorAll('.charPopup'));
-  const topCta = document.querySelector('.ctaBtn');
+  const charState = new Map();
+  charPopups.forEach(img => charState.set(img, { peekX: 0, scrollY: 0, retreatTimer: null }));
+
+  function applyCharTranslate(img) {
+    const s = charState.get(img);
+    img.style.translate = `${s.peekX}px ${s.scrollY}px`;
+  }
+
   charPopups.forEach(img => {
     img.addEventListener('animationend', (e) => {
       if (e.animationName === 'charBounce') img.classList.remove('is-tapped');
     });
     img.addEventListener('click', () => {
       img.classList.add('is-tapped');
-      topCta?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const s = charState.get(img);
+      const isLeft = img.classList.contains('charPopup--left');
+      s.peekX = isLeft ? 26 : -26;
+      applyCharTranslate(img);
+      clearTimeout(s.retreatTimer);
+      s.retreatTimer = setTimeout(() => {
+        s.peekX = 0;
+        applyCharTranslate(img);
+      }, 3000);
     });
   });
 
-  // スクロールに合わせてキャラをふわっと上下させる(transformはkeyframe側が使うため、
-  // 別プロパティのtranslateで加算的にずらす。CSS Transforms Level 2対応ブラウザが前提)。
+  // スクロールに合わせてキャラをふわっと上下させる。
   let scrollTicking = false;
   function updateCharParallax() {
     const viewportH = window.innerHeight;
@@ -572,7 +591,8 @@
       const r = img.getBoundingClientRect();
       const centerOffset = (r.top + r.height / 2) - viewportH / 2;
       const shift = Math.max(-14, Math.min(14, centerOffset * -0.04));
-      img.style.translate = `0 ${shift}px`;
+      charState.get(img).scrollY = shift;
+      applyCharTranslate(img);
     });
     scrollTicking = false;
   }
