@@ -8,15 +8,10 @@
 story/
 ├── index.html   # 唯一のページ本体
 ├── assets/      # negotiate/assets/ から流用した画像
-└── video/       # 制作動画のmp4を置く場所(今は空)
+└── video/       # 制作動画(making-of.mp4)
 ```
 
 ## あとで差し替える場所
-
-### 制作動画
-1. `video/making-of.mp4` として動画ファイルを置く(H.264/AAC推奨。GitHubは単一ファイル100MB超をブロックするため、可能なら数十MB程度に圧縮する)。
-2. `index.html`内の`#videoFrame`にある`<div class="videoPlaceholder">...</div>`を、直前にコメントアウトしてある`<video controls playsinline preload="metadata" poster="assets/video-poster.png"><source src="video/making-of.mp4" type="video/mp4"></video>`に置き換える。
-3. 縦動画・横動画どちらでも、JS(`loadedmetadata`)が実際の比率に自動補正するので、`aspect-ratio`を手動調整する必要はない(縦・横それぞれのテスト動画で動作確認済み)。
 
 ### 制作秘話・スタッフ紹介の写真
 `.photoBox`の`<div>`プレースホルダー(「写真準備中」表示、`<!-- TODO -->`コメント付き)を、同じ`.photoBox`クラスを持つ`<img>`タグに置き換えるだけでよい(`aspect-ratio`/`object-fit`は`.photoBox`側で固定されているため崩れない)。

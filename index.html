@@ -218,6 +218,7 @@
   .staffGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
   .staffCard { text-align: center; }
   .staffCard .photoBox { width: 96px; height: 96px; margin: 0 auto 8px; aspect-ratio: 1/1; }
+  .staffCard .photoBox img { object-position: top center; }
   .staffName { font-weight: 700; font-size: .92rem; margin: 2px 0; }
   .staffRole { font-size: .75rem; color: var(--vermilion-deep); font-weight: 700; }
   .staffComment { font-size: .8rem; color: var(--ink-soft); margin: 4px 0 0; }
@@ -232,22 +233,33 @@
     margin-top: 12px;
   }
   .videoFrame video { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--indigo-deep); }
-  .videoPlaceholder {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    background:
-      linear-gradient(rgba(35,46,68,.35), rgba(35,46,68,.75)),
-      repeating-linear-gradient(135deg, rgba(255,248,238,.06) 0 8px, rgba(255,248,238,0) 8px 16px);
+
+  /* ==== れのあ・おちえくのポップアップ演出 ====
+     カウンターの帯(.counterLedge--thin)の上を、キャラがひょこっと覗き込むイメージ。
+     .stallHeroと同じくoverflow:hiddenの箱に収め、モバイル横スクロールを起こさないようにする。 */
+  .charPopupStrip { position: relative; height: 88px; overflow: hidden; margin: -6px 0 12px; pointer-events: none; }
+  .charPopup {
+    position: absolute; bottom: -8px; width: 92px; height: auto; opacity: 0;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.28));
   }
-  .noren {
-    display: flex; gap: 6px;
+  .charPopup--right { right: 6%; transform: translateX(120%) rotate(10deg); }
+  .charPopup--left { left: 6%; transform: translateX(-120%) rotate(-10deg); }
+  .charPopup.is-in.charPopup--right { animation: popInRight .7s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .charPopup.is-in.charPopup--left { animation: popInLeft .7s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes popInRight {
+    0% { transform: translateX(120%) rotate(10deg); opacity: 0; }
+    60% { transform: translateX(-6%) rotate(-3deg); opacity: 1; }
+    80% { transform: translateX(3%) rotate(2deg); }
+    100% { transform: translateX(0) rotate(0); opacity: 1; }
   }
-  .norenPanel {
-    width: 30px; height: 84px; background: var(--vermilion);
-    border-radius: 0 0 4px 4px; box-shadow: inset 0 -6px 10px rgba(0,0,0,.25);
-    display: flex; align-items: flex-start; justify-content: center; padding-top: 10px;
+  @keyframes popInLeft {
+    0% { transform: translateX(-120%) rotate(-10deg); opacity: 0; }
+    60% { transform: translateX(6%) rotate(3deg); opacity: 1; }
+    80% { transform: translateX(-3%) rotate(-2deg); }
+    100% { transform: translateX(0) rotate(0); opacity: 1; }
   }
-  .norenPanel span {
-    color: #fff8ee; font-family: var(--font-display); font-weight: 800; writing-mode: vertical-rl; font-size: .82rem;
+  @media (prefers-reduced-motion: reduce) {
+    .charPopup { opacity: 1; transform: none; animation: none; }
   }
 
   /* ==== フッター ==== */
@@ -285,6 +297,7 @@
     </a>
 
     <div class="counterLedge--thin"></div>
+    <div class="charPopupStrip"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"></div>
 
     <section id="mechanism">
       <span class="sectionKicker">⚙️ HOW IT WORKS</span>
@@ -351,6 +364,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
+    <div class="charPopupStrip"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
 
     <section id="how-to">
       <span class="sectionKicker sectionKicker--indigo">🕹️ HOW TO PLAY</span>
@@ -400,6 +414,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
+    <div class="charPopupStrip"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"></div>
 
     <section id="story-timeline">
       <span class="sectionKicker sectionKicker--mustard">📜 BEHIND THE SCENES</span>
@@ -445,6 +460,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
+    <div class="charPopupStrip"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"></div>
 
     <section id="staff">
       <span class="sectionKicker">🧑‍🍳 STAFF</span>
@@ -452,14 +468,14 @@
       <p class="lead">2人でつくりました。</p>
       <div class="staffGrid">
         <div class="staffCard">
-          <div class="photoBox photoBox--round"><span>写真準備中<!-- TODO: assets/staff/member1.jpg --></span></div>
-          <p class="staffName">スタッフ名(調整中)</p>
+          <div class="photoBox photoBox--round"><img src="assets/renoa-greet.png" alt="れのあ"></div>
+          <p class="staffName">れのあ</p>
           <p class="staffRole">開発・企画</p>
           <p class="staffComment">コメント準備中</p>
         </div>
         <div class="staffCard">
-          <div class="photoBox photoBox--round"><span>写真準備中<!-- TODO: assets/staff/member2.jpg --></span></div>
-          <p class="staffName">スタッフ名(調整中)</p>
+          <div class="photoBox photoBox--round"><img src="assets/ochieku-greet.png" alt="おちえく"></div>
+          <p class="staffName">おちえく</p>
           <p class="staffRole">担当(調整中)</p>
           <p class="staffComment">コメント準備中</p>
         </div>
@@ -467,6 +483,10 @@
     </section>
 
     <div class="counterLedge--thin"></div>
+    <div class="charPopupStrip">
+      <img class="charPopup charPopup--left" src="assets/renoa-thanks.png" alt="れのあ">
+      <img class="charPopup charPopup--right" src="assets/ochieku-sorry.png" alt="おちえく">
+    </div>
 
     <section id="video">
       <span class="sectionKicker sectionKicker--indigo">🎬 MOVIE</span>
@@ -474,18 +494,9 @@
       <p class="lead">つくる過程をまとめた動画です。完成でき次第、ここに公開します。</p>
 
       <div class="videoFrame" id="videoFrame">
-        <!-- 動画が用意でき次第、下のvideoPlaceholderをこの内容に差し替える:
         <video controls playsinline preload="metadata" poster="assets/video-poster.png">
           <source src="video/making-of.mp4" type="video/mp4">
         </video>
-        -->
-        <div class="videoPlaceholder">
-          <div class="noren">
-            <div class="norenPanel"><span>準</span></div>
-            <div class="norenPanel"><span>備</span></div>
-            <div class="norenPanel"><span>中</span></div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -518,6 +529,17 @@
   }, { rootMargin: '-45% 0px -45% 0px' });
 
   sections.forEach(sec => observer.observe(sec));
+
+  // れのあ・おちえくのポップアップ: 帯が画面に入った瞬間に1回だけ再生する
+  const popupStrips = Array.from(document.querySelectorAll('.charPopupStrip'));
+  const popupObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.querySelectorAll('.charPopup').forEach(img => img.classList.add('is-in'));
+      popupObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.4 });
+  popupStrips.forEach(strip => popupObserver.observe(strip));
 
   // 動画が差し込まれた場合、実際の縦横比にvideoFrameを補正する
   const videoFrame = document.getElementById('videoFrame');
