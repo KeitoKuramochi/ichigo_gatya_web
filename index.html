@@ -27,7 +27,7 @@
     --font-body: 'Zen Maru Gothic', system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  html { background: var(--paper); scroll-behavior: smooth; }
+  html { background: var(--paper); scroll-behavior: smooth; overflow-x: hidden; }
   body {
     font-family: var(--font-body); max-width: 480px; margin: 0 auto; color: var(--ink);
     overflow-wrap: break-word;
@@ -235,15 +235,16 @@
   .videoFrame video { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--indigo-deep); }
 
   /* ==== れのあ・おちえくのポップアップ演出 ====
-     カウンターの帯(.counterLedge--thin)の上を、キャラがひょこっと覗き込むイメージ。
-     .stallHeroと同じくoverflow:hiddenの箱に収め、モバイル横スクロールを起こさないようにする。 */
-  .charPopupStrip { position: relative; height: 88px; overflow: hidden; margin: -6px 0 12px; pointer-events: none; }
+     キャラを箱に閉じ込めず、ページの左右の端からコンテンツの上に重なるように
+     ひょこっと現れさせる(見切れ防止のため、切り取る箱は作らない。左右にはみ出す
+     分はbody側のoverflow-x:hiddenで安全に受け止める)。 */
+  .charAnchor { position: relative; height: 0; }
   .charPopup {
-    position: absolute; bottom: -8px; width: 92px; height: auto; opacity: 0;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,.28));
+    position: absolute; z-index: 15; width: 68px; height: auto; opacity: 0;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); pointer-events: none;
   }
-  .charPopup--right { right: 6%; transform: translateX(120%) rotate(10deg); }
-  .charPopup--left { left: 6%; transform: translateX(-120%) rotate(-10deg); }
+  .charPopup--right { right: -14px; }
+  .charPopup--left { left: -14px; }
   .charPopup.is-in.charPopup--right { animation: popInRight .7s cubic-bezier(.34,1.56,.64,1) forwards; }
   .charPopup.is-in.charPopup--left { animation: popInLeft .7s cubic-bezier(.34,1.56,.64,1) forwards; }
   @keyframes popInRight {
@@ -297,7 +298,7 @@
     </a>
 
     <div class="counterLedge--thin"></div>
-    <div class="charPopupStrip"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ" style="top:-26px"></div>
 
     <section id="mechanism">
       <span class="sectionKicker">⚙️ HOW IT WORKS</span>
@@ -361,10 +362,11 @@
         <span>② 店番AIがオンチェーンで確認</span>
         <span>③ ロックが解除される(回すのは自分で!)</span>
       </div>
+      <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく" style="top:-10px"></div>
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charPopupStrip"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく" style="top:-26px"></div>
 
     <section id="how-to">
       <span class="sectionKicker sectionKicker--indigo">🕹️ HOW TO PLAY</span>
@@ -395,6 +397,7 @@
           <p class="stepDesc">値切り交渉にチャレンジ。話し方次第で価格が変わります。</p>
         </div>
       </div>
+      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ" style="top:-10px"></div>
       <div class="stepCard">
         <div class="stepThumb"><img src="assets/ichigoban-decided.png" alt=""></div>
         <div class="stepBody">
@@ -414,7 +417,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charPopupStrip"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thanks.png" alt="れのあ" style="top:-26px"></div>
 
     <section id="story-timeline">
       <span class="sectionKicker sectionKicker--mustard">📜 BEHIND THE SCENES</span>
@@ -443,6 +446,7 @@
           <p class="timelineDesc">Leonardo AI・Adobe Fireflyと試行錯誤した末、狙った絵柄と正しい文字が安定して出るツールに出会う。</p>
         </div>
 
+        <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-sorry.png" alt="おちえく" style="top:-10px"></div>
         <div class="timelineEntry">
           <p class="timelineDate">2026-07-13</p>
           <p class="timelineTitle">配色を朱赤・藍・生成りクリームへ全面刷新</p>
@@ -460,7 +464,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charPopupStrip"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく" style="top:-26px"></div>
 
     <section id="staff">
       <span class="sectionKicker">🧑‍🍳 STAFF</span>
@@ -483,9 +487,9 @@
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charPopupStrip">
-      <img class="charPopup charPopup--left" src="assets/renoa-thanks.png" alt="れのあ">
-      <img class="charPopup charPopup--right" src="assets/ochieku-sorry.png" alt="おちえく">
+    <div class="charAnchor">
+      <img class="charPopup charPopup--left" src="assets/renoa-happy.png" alt="れのあ" style="top:-26px">
+      <img class="charPopup charPopup--right" src="assets/ochieku-worried.png" alt="おちえく" style="top:-20px">
     </div>
 
     <section id="video">
@@ -530,16 +534,16 @@
 
   sections.forEach(sec => observer.observe(sec));
 
-  // れのあ・おちえくのポップアップ: 帯が画面に入った瞬間に1回だけ再生する
-  const popupStrips = Array.from(document.querySelectorAll('.charPopupStrip'));
+  // れのあ・おちえくのポップアップ: アンカーが画面に入った瞬間に1回だけ再生する
+  const charAnchors = Array.from(document.querySelectorAll('.charAnchor'));
   const popupObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       entry.target.querySelectorAll('.charPopup').forEach(img => img.classList.add('is-in'));
       popupObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.4 });
-  popupStrips.forEach(strip => popupObserver.observe(strip));
+  }, { threshold: 0 });
+  charAnchors.forEach(anchor => popupObserver.observe(anchor));
 
   // 動画が差し込まれた場合、実際の縦横比にvideoFrameを補正する
   const videoFrame = document.getElementById('videoFrame');
