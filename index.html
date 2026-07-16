@@ -199,29 +199,48 @@
   .timelineTitle { font-weight: 700; margin: 2px 0 4px; }
   .timelineDesc { font-size: .87rem; color: var(--ink-soft); margin: 0 0 8px; }
 
-  /* ==== 差し替え可能な写真プレースホルダー ====
-     プレースホルダーと本番<img>の両方が同じ.photoBoxを使うことで、
-     aspect-ratio/object-fitを変えずに差し替えられるようにする。 */
-  .photoBox {
-    display: flex; align-items: center; justify-content: center;
-    aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
-    background:
-      repeating-linear-gradient(45deg, rgba(43,33,24,.05) 0 10px, rgba(43,33,24,.09) 10px 20px),
-      var(--paper-deep);
-    border: 2px dashed rgba(43,33,24,.32);
-    color: var(--ink-soft); font-size: .78rem; text-align: center; padding: 10px;
+  /* ==== スタッフ紹介(ゴージャス版) ====
+     採用担当など外部の人が見ても本名で覚えてもらえるよう、本名を主役にして
+     写真を大きく見せ、金の縁取り・角の飾りでプロフィールカードらしい
+     ゴージャスな見た目にする。 */
+  .staffShowcase { display: flex; flex-direction: column; gap: 22px; margin-top: 14px; }
+  .staffProfile {
+    position: relative; display: flex; gap: 14px; align-items: flex-start;
+    background: linear-gradient(160deg, #fffdf6, var(--paper-deep));
+    border: 1px solid rgba(224,178,92,.55);
+    border-radius: 16px; padding: 18px 16px 16px;
+    box-shadow: 0 4px 18px rgba(43,33,24,.14), inset 0 0 0 1px rgba(255,255,255,.6);
   }
-  .photoBox img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photoBox--round { aspect-ratio: 1 / 1; border-radius: 50%; }
-
-  /* ==== スタッフ紹介 ==== */
-  .staffGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
-  .staffCard { text-align: center; }
-  .staffCard .photoBox { width: 96px; height: 96px; margin: 0 auto 8px; aspect-ratio: 1/1; }
-  .staffCard .photoBox img { object-position: top center; }
-  .staffName { font-weight: 700; font-size: .92rem; margin: 2px 0; }
-  .staffRole { font-size: .75rem; color: var(--vermilion-deep); font-weight: 700; }
-  .staffComment { font-size: .8rem; color: var(--ink-soft); margin: 4px 0 0; }
+  .staffProfile::before {
+    content: "✦"; position: absolute; top: -12px; left: 16px;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem; color: #fff8ee; background: var(--mustard);
+    box-shadow: 0 0 0 3px var(--paper), 0 2px 6px rgba(0,0,0,.25);
+  }
+  .staffPhotoFrame {
+    flex: 0 0 auto; width: 104px; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--mustard);
+    box-shadow: 0 0 0 3px rgba(224,165,61,.3), 0 6px 14px rgba(0,0,0,.22);
+  }
+  .staffPhotoFrame img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .staffInfo { flex: 1; min-width: 0; }
+  .staffRealName {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.12rem; margin: 0 0 4px;
+    color: var(--indigo-deep); line-height: 1.3;
+  }
+  .staffNick {
+    display: inline-block; font-family: var(--font-body); font-weight: 700; font-size: .66rem;
+    color: var(--vermilion-deep); background: rgba(193,64,46,.1); border-radius: 999px;
+    padding: 2px 9px; margin-left: 2px; vertical-align: middle; white-space: nowrap;
+  }
+  .staffAffil { font-size: .74rem; color: var(--ink-soft); margin: 3px 0 0; line-height: 1.45; }
+  .staffField { font-size: .8rem; margin: 8px 0 0; line-height: 1.55; }
+  .staffField strong { color: var(--vermilion-deep); font-weight: 700; }
+  .staffQuote {
+    font-size: .78rem; font-style: italic; color: var(--ink-soft); margin: 10px 0 0;
+    padding-left: 10px; border-left: 3px solid var(--mustard); line-height: 1.5;
+  }
 
   /* ==== 動画セクション ====
      縦・横どちらの動画が来ても崩れないよう、暗い舞台色の枠に収める。
@@ -450,18 +469,24 @@
       <span class="sectionKicker">🧑‍🍳 STAFF</span>
       <h2>つくったひと</h2>
       <p class="lead">2人でつくりました。</p>
-      <div class="staffGrid">
-        <div class="staffCard">
-          <div class="photoBox photoBox--round"><img src="assets/renoa-greet.png" alt="れのあ"></div>
-          <p class="staffName">れのあ</p>
-          <p class="staffRole">開発・企画</p>
-          <p class="staffComment">コメント準備中</p>
+      <div class="staffShowcase">
+        <div class="staffProfile">
+          <div class="staffPhotoFrame"><img src="assets/staff-renoa.png" alt="前田怜音"></div>
+          <div class="staffInfo">
+            <p class="staffRealName">前田 怜音<span class="staffNick">Discord: れのあ</span></p>
+            <p class="staffAffil">千葉工業大学大学院 情報科学研究科 情報科学専攻 修士1年</p>
+            <p class="staffField"><strong>研究分野:</strong> XR・メタバース領域。テキストや動画から3Dアニメーションを自動生成する技術を研究。</p>
+            <p class="staffQuote">AIやメタバースのような最先端技術を、もっと多くの人が気軽に触れられるものにしたい。そんな技術者を目指しています。</p>
+          </div>
         </div>
-        <div class="staffCard">
-          <div class="photoBox photoBox--round"><img src="assets/ochieku-greet.png" alt="おちえく"></div>
-          <p class="staffName">おちえく</p>
-          <p class="staffRole">担当(調整中)</p>
-          <p class="staffComment">コメント準備中</p>
+        <div class="staffProfile">
+          <div class="staffPhotoFrame"><img src="assets/staff-otiek.png" alt="倉持啓人"></div>
+          <div class="staffInfo">
+            <p class="staffRealName">倉持 啓人<span class="staffNick">Discord: おちえく</span></p>
+            <p class="staffAffil">千葉工業大学大学院 情報科学研究科 情報科学専攻 修士1年</p>
+            <p class="staffField"><strong>研究分野:</strong> 間取りの自動生成・シミュレーション。</p>
+            <p class="staffQuote">ものづくりや、人に喜んでもらえることをするのが好きです。</p>
+          </div>
         </div>
       </div>
     </section>
