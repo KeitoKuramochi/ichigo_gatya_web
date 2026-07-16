@@ -235,19 +235,23 @@
   .videoFrame video { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--indigo-deep); }
 
   /* ==== れのあ・おちえくのポップアップ演出 ====
-     キャラを箱に閉じ込めて見切れさせず、かといって本文の文字やキャラ同士にも
-     かからないよう、.charAnchor自体に実寸の高さを持たせて専用の余白を確保する
-     (前後の要素はこの高さぶん自然に押し広げられる)。左右の端からひょこっと
-     覗く見た目は維持しつつ、はみ出す分はbody側のoverflow-x:hiddenで受け止める。 */
-  .charAnchor { position: relative; height: 112px; margin: 6px 0; }
+     ただ現れて静止しているだけだと味気ないので、ポップイン後もずっと
+     ゆらゆら浮遊させ(bobFloat)、スクロールに応じて位置が少し動き(JS側で
+     標準translateプロパティを操作、keyframeが使うtransformとは別プロパティ
+     なので競合しない)、タップすると跳ねるインタラクションを付ける。
+     本文と重なってもよい代わりに一回り大きくする。矢印バッジで
+     「上のボタンを押してね」を指し示し、タップでそこまでスクロールする。 */
+  .charAnchor { position: relative; height: 62px; margin: 6px 0; }
   .charPopup {
-    position: absolute; top: 2px; z-index: 15; width: 58px; height: auto; opacity: 0;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); pointer-events: none;
+    position: absolute; top: -14px; z-index: 15; width: 82px; height: auto; opacity: 0;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+    cursor: pointer; pointer-events: auto; touch-action: manipulation;
   }
-  .charPopup--right { right: -12px; }
-  .charPopup--left { left: -12px; }
-  .charPopup.is-in.charPopup--right { animation: popInRight .7s cubic-bezier(.34,1.56,.64,1) forwards; }
-  .charPopup.is-in.charPopup--left { animation: popInLeft .7s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .charPopup--right { right: -16px; }
+  .charPopup--left { left: -16px; }
+  .charPopup.is-in.charPopup--right { animation: popInRight .7s cubic-bezier(.34,1.56,.64,1) forwards, bobFloat 2.6s ease-in-out .7s infinite; }
+  .charPopup.is-in.charPopup--left { animation: popInLeft .7s cubic-bezier(.34,1.56,.64,1) forwards, bobFloat 2.6s ease-in-out .7s infinite; }
+  .charPopup.is-tapped { animation: charBounce .55s ease !important; }
   @keyframes popInRight {
     0% { transform: translateX(120%) rotate(10deg); opacity: 0; }
     60% { transform: translateX(-6%) rotate(-3deg); opacity: 1; }
@@ -260,8 +264,31 @@
     80% { transform: translateX(-3%) rotate(-2deg); }
     100% { transform: translateX(0) rotate(0); opacity: 1; }
   }
+  @keyframes bobFloat {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-9px) rotate(1.5deg); }
+  }
+  @keyframes charBounce {
+    0% { transform: scale(1) rotate(0); }
+    30% { transform: scale(1.22, .82) rotate(-6deg); }
+    55% { transform: scale(.9, 1.15) rotate(5deg); }
+    78% { transform: scale(1.06, .96) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .charArrow {
+    position: absolute; top: -22px; z-index: 16; font-size: 1.3rem; opacity: 0;
+    pointer-events: none; animation: arrowPoint 1.6s ease-in-out infinite;
+  }
+  .charArrow--right { right: 4px; }
+  .charArrow--left { left: 4px; }
+  .charAnchor:has(.charPopup.is-in) .charArrow { opacity: 1; }
+  @keyframes arrowPoint {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
   @media (prefers-reduced-motion: reduce) {
     .charPopup { opacity: 1; transform: none; animation: none; }
+    .charArrow { animation: none; }
   }
 
   /* ==== フッター ==== */
@@ -285,7 +312,6 @@
   <nav class="tileNav" id="tileNav">
     <a href="#mechanism" data-section="mechanism"><span class="tileIcon">⚙️</span>しくみ</a>
     <a href="#how-to" data-section="how-to"><span class="tileIcon">🕹️</span>あそびかた</a>
-    <a href="#story-timeline" data-section="story-timeline"><span class="tileIcon">📜</span>制作秘話</a>
     <a href="#staff" data-section="staff"><span class="tileIcon">🧑‍🍳</span>スタッフ</a>
     <a href="#video" data-section="video"><span class="tileIcon">🎬</span>動画</a>
     <a href="https://ichigo-gatya.onrender.com/negotiate/" class="tileNav__cta" target="_blank" rel="noopener"><span class="tileIcon">🎯</span>挑戦する</a>
@@ -299,7 +325,7 @@
     </a>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thinking.png" alt="れのあ"><span class="charArrow charArrow--right">👆</span></div>
 
     <section id="mechanism">
       <span class="sectionKicker">⚙️ HOW IT WORKS</span>
@@ -363,11 +389,11 @@
         <span>② 店番AIがオンチェーンで確認</span>
         <span>③ ロックが解除される(回すのは自分で!)</span>
       </div>
-      <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"></div>
+      <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-worried.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
 
     <section id="how-to">
       <span class="sectionKicker sectionKicker--indigo">🕹️ HOW TO PLAY</span>
@@ -398,7 +424,7 @@
           <p class="stepDesc">値切り交渉にチャレンジ。話し方次第で価格が変わります。</p>
         </div>
       </div>
-      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"></div>
+      <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-happy.png" alt="れのあ"><span class="charArrow charArrow--right">👆</span></div>
       <div class="stepCard">
         <div class="stepThumb"><img src="assets/ichigoban-decided.png" alt=""></div>
         <div class="stepBody">
@@ -418,54 +444,7 @@
     </section>
 
     <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--right" src="assets/renoa-thanks.png" alt="れのあ"></div>
-
-    <section id="story-timeline">
-      <span class="sectionKicker sectionKicker--mustard">📜 BEHIND THE SCENES</span>
-      <h2>制作秘話</h2>
-      <p class="lead">このガチャガチャができるまでの道のりです。当日の様子は後日ここに追加します。</p>
-
-      <div class="timeline">
-        <div class="timelineRail"></div>
-
-        <div class="timelineEntry">
-          <p class="timelineDate">2026-07-02</p>
-          <p class="timelineTitle">決済専用ページの土台づくり</p>
-          <p class="timelineDesc">友人のゲームには頼らず、送金だけを行うシンプルなページを自作することに決定。</p>
-        </div>
-
-        <div class="timelineEntry">
-          <p class="timelineDate">2026-07-11</p>
-          <p class="timelineTitle">アートスタイルを「昭和レトロな縁日」に決定</p>
-          <p class="timelineDesc">AI画像生成ツールをいろいろ試しながら、屋台のポスター風のデザイン方針が固まっていく。</p>
-          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-11.jpg に差し替え -->(生成ツールを試している画面など)</span></div>
-        </div>
-
-        <div class="timelineEntry">
-          <p class="timelineDate">2026-07-12</p>
-          <p class="timelineTitle">画像生成ツールが「Google AI Studio」に決定</p>
-          <p class="timelineDesc">Leonardo AI・Adobe Fireflyと試行錯誤した末、狙った絵柄と正しい文字が安定して出るツールに出会う。</p>
-        </div>
-
-        <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-sorry.png" alt="おちえく"></div>
-        <div class="timelineEntry">
-          <p class="timelineDate">2026-07-13</p>
-          <p class="timelineTitle">配色を朱赤・藍・生成りクリームへ全面刷新</p>
-          <p class="timelineDesc">「見た目がバラバラ」という指摘を受け、イラストの世界観から採った配色に統一。値札や屋台の舞台演出が生まれた。</p>
-          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-13.jpg に差し替え --></span></div>
-        </div>
-
-        <div class="timelineEntry">
-          <p class="timelineDate">2026-07-16</p>
-          <p class="timelineTitle">CHIBATECH PROTOTYPE 当日</p>
-          <p class="timelineDesc">当日の様子は後日ここに追加します。</p>
-          <div class="photoBox"><span>写真準備中<br><!-- TODO: assets/timeline/2026-07-16.jpg に差し替え -->(段ボール本体・配線・作業風景など)</span></div>
-        </div>
-      </div>
-    </section>
-
-    <div class="counterLedge--thin"></div>
-    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"></div>
+    <div class="charAnchor"><img class="charPopup charPopup--left" src="assets/ochieku-happy.png" alt="おちえく"><span class="charArrow charArrow--left">👆</span></div>
 
     <section id="staff">
       <span class="sectionKicker">🧑‍🍳 STAFF</span>
@@ -489,8 +468,8 @@
 
     <div class="counterLedge--thin"></div>
     <div class="charAnchor">
-      <img class="charPopup charPopup--left" src="assets/renoa-happy.png" alt="れのあ">
-      <img class="charPopup charPopup--right" src="assets/ochieku-worried.png" alt="おちえく">
+      <img class="charPopup charPopup--left" src="assets/renoa-happy.png" alt="れのあ"><span class="charArrow charArrow--left">👆</span>
+      <img class="charPopup charPopup--right" src="assets/ochieku-worried.png" alt="おちえく"><span class="charArrow charArrow--right">👆</span>
     </div>
 
     <section id="video">
@@ -545,6 +524,39 @@
     });
   }, { threshold: 0 });
   charAnchors.forEach(anchor => popupObserver.observe(anchor));
+
+  // タップで跳ねる+ページ上部の「挑戦する」ボタンまでスクロール(矢印バッジが指す先)。
+  const charPopups = Array.from(document.querySelectorAll('.charPopup'));
+  const topCta = document.querySelector('.ctaBtn');
+  charPopups.forEach(img => {
+    img.addEventListener('animationend', (e) => {
+      if (e.animationName === 'charBounce') img.classList.remove('is-tapped');
+    });
+    img.addEventListener('click', () => {
+      img.classList.add('is-tapped');
+      topCta?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  // スクロールに合わせてキャラをふわっと上下させる(transformはkeyframe側が使うため、
+  // 別プロパティのtranslateで加算的にずらす。CSS Transforms Level 2対応ブラウザが前提)。
+  let scrollTicking = false;
+  function updateCharParallax() {
+    const viewportH = window.innerHeight;
+    charPopups.forEach(img => {
+      const r = img.getBoundingClientRect();
+      const centerOffset = (r.top + r.height / 2) - viewportH / 2;
+      const shift = Math.max(-14, Math.min(14, centerOffset * -0.04));
+      img.style.translate = `0 ${shift}px`;
+    });
+    scrollTicking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (scrollTicking) return;
+    scrollTicking = true;
+    requestAnimationFrame(updateCharParallax);
+  }, { passive: true });
+  updateCharParallax();
 
   // 動画が差し込まれた場合、実際の縦横比にvideoFrameを補正する
   const videoFrame = document.getElementById('videoFrame');
